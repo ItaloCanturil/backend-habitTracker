@@ -24,6 +24,7 @@ module.exports = {
   async login(req, res) {
     try {
       const user = await Users.findOne({ email: req.body.email }).select('+password').exec();
+      console.log(req.body.email);
       if (!user) throw new Error('usuario não existe');
       const result = await bcrypt.compare(req.body.password, user.password);
       if (!result) throw new Error('senha incorreta');
@@ -37,7 +38,21 @@ module.exports = {
     }
   },
 
-  logout(req, res) {
+  async logout(req, res) {
+    await Auth.deleteOne({ token: req.token }, () => {});
     return res.json({ auth: false, token: null });
+  },
+
+  async profile(req, res) {
+    try {
+      const auth = await Auth.findOne({ token: req.token });
+      console.log(auth);
+      if (!auth) {
+        throw new Error('Usuario não encotrado');
+      }
+      return res.status(200).send({ koe: 'koe' });
+    } catch (err) {
+      return res.status(400).send({ error: err.message });
+    }
   },
 };

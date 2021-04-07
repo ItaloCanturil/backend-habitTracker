@@ -22,13 +22,13 @@ async function verifyJWT(req, res, next) {
   }
 }
 
-routes.use(['/logout', '/profile', '/home'], (req, res, next) => {
+routes.use(['/logout', '/profile'], (req, res, next) => {
   verifyJWT(req, res, next);
 });
 
 routes.get('/', (req, res) => res.json({ message: 'It works' }));
 
-routes.get('/home');
+routes.get('/home', (req, res) => res.status(200));
 
 routes.get('/profile', usersController.profile);
 

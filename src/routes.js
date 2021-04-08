@@ -7,12 +7,12 @@ const routes = express.Router();
 
 async function verifyJWT(req, res, next) {
   try {
-    let token = req.headers.authorization;
+    const token = req.headers.authorization;
     if (!token) throw new Error('header apitou');
-    token = token.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.SECRET);
+    const [, userToken] = token;
+    const decoded = jwt.verify(userToken, process.env.SECRET);
     if (!decoded) throw new Error('Invalid token');
-    const auth = await Auth.findOne({ token }).exec();
+    const auth = await Auth.findOne({ userToken }).exec();
     if (!auth) throw new Error('Invalid token');
     req.token = token;
     req.user = auth.user;
@@ -27,8 +27,6 @@ routes.use(['/logout', '/profile'], (req, res, next) => {
 });
 
 routes.get('/', (req, res) => res.json({ message: 'It works' }));
-
-routes.get('/home', (req, res) => res.status(200));
 
 routes.get('/profile', usersController.profile);
 

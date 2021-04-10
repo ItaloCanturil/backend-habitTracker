@@ -9,12 +9,12 @@ async function verifyJWT(req, res, next) {
   try {
     const token = req.headers.authorization;
     if (!token) throw new Error('header apitou');
-    const [, userToken] = token;
+    const [, userToken] = token.split(' ');
     const decoded = jwt.verify(userToken, process.env.SECRET);
     if (!decoded) throw new Error('Invalid token');
-    const auth = await Auth.findOne({ userToken }).exec();
+    const auth = await Auth.findOne({ token: userToken }).exec();
     if (!auth) throw new Error('Invalid token');
-    req.token = token;
+    req.token = userToken;
     req.user = auth.user;
     next();
   } catch (err) {
@@ -22,16 +22,12 @@ async function verifyJWT(req, res, next) {
   }
 }
 
-routes.use(['/logout', '/profile'], (req, res, next) => {
-  verifyJWT(req, res, next);
-});
-
-routes.get('/', usersController.profile);
+routes.get('/', verifyJWT, usersController.profile);
 
 routes.post('/register', usersController.register);
 
 routes.post('/login', usersController.login);
 
-routes.post('/logout', usersController.logout);
+routes.post('/logout', verifyJWT, usersController.logout);
 
 module.exports = routes;

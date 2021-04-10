@@ -11,11 +11,11 @@ module.exports = {
   async register(req, res) {
     try {
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
-      const { email, id } = await Users.create({
+      const { email, id, name } = await Users.create({
         ...req.body,
         password: encryptedPassword,
       });
-      return res.status(201).json({ user: { email, id } });
+      return res.status(201).json({ user: { email, id, name } });
     } catch (err) {
       return res.status(400).json({ error: err.message || 'Registration failed' });
     }
@@ -44,11 +44,8 @@ module.exports = {
 
   async profile(req, res) {
     try {
-      const auth = await Auth.findOne({ token: req.token });
-      if (!auth) {
-        throw new Error('Usuario não encotrado');
-      }
-      return res.status(200).send({ koe: 'koe' });
+      const user = await Users.findById(req.user).exec();
+      return res.status(200).send({ user });
     } catch (err) {
       return res.status(400).send({ error: err.message });
     }
